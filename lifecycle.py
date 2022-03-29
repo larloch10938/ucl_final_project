@@ -25,19 +25,23 @@ def epstein_zin_utility(x, wealth, age, future_utility_function):
         * future_utility_function(new_wealth) ** (1 - investor.GAMMA),
     )
     # lastly I can compute the value function using epstein-zin
-    value = (
-        ((1 - investor.DELTA) * x[0] ** (1 - 1 / investor.PSI))
-        + (
-            (investor.DELTA * np.maximum(expected_future_utility, 1e-20))
-            ** ((1 - 1 / investor.PSI) / (1 - investor.GAMMA))
+    value = np.maximum(
+        (
+            ((1 - investor.DELTA) * np.maximum(x[0], 1e-20) ** (1 - 1 / investor.PSI))
+            + (
+                (investor.DELTA * np.maximum(expected_future_utility, 1e-20))
+                ** ((1 - 1 / investor.PSI) / (1 - investor.GAMMA))
+            )
         )
-    ) ** (1 / (1 - 1 / investor.PSI))
+        ** (1 / (1 - 1 / investor.PSI)),
+        1e-20,
+    )
 
     return value
 
 
 def optimize_lifecycle():
-    wealth_vector = np.exp(np.linspace(-6, 3, 100))
+    wealth_vector = np.exp(np.linspace(-3, 10, 300))
     consumption_policy = pd.DataFrame(
         np.zeros((len(investor.AGE_LEVELS), len(wealth_vector))),
         index=investor.AGE_LEVELS,
