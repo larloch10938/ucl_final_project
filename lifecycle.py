@@ -5,6 +5,7 @@ from scipy.optimize import minimize
 from scipy.interpolate import PchipInterpolator
 import investor
 import quantecon
+import matplotlib.pyplot as plt
 
 
 def epstein_zin_utility(x, wealth, age, future_utility_function):
@@ -41,7 +42,7 @@ def epstein_zin_utility(x, wealth, age, future_utility_function):
 
 
 def optimize_lifecycle():
-    wealth_vector = np.exp(np.linspace(-3, 10, 300))
+    wealth_vector = investor.WEALTH_GRID
     consumption_policy = pd.DataFrame(
         np.zeros((len(investor.AGE_LEVELS), len(wealth_vector))),
         index=investor.AGE_LEVELS,
@@ -64,7 +65,7 @@ def optimize_lifecycle():
         1 / (1 - 1 / investor.PSI)
     )
     utility = vtplus1
-    consumption_policy.loc[investor.END_AGE, :] = consumption
+    consumption_policy.loc[investor.END_AGE, :] = consumption / wealth_vector
     equity_policy.loc[investor.END_AGE, :] = investor.MIN_EQUITY
     utility_result.loc[investor.END_AGE, :] = utility
     interpolated_utility_policy = PchipInterpolator(wealth_vector, vtplus1)
@@ -74,6 +75,11 @@ def optimize_lifecycle():
         interpolated_utility_policy = PchipInterpolator(
             wealth_vector, utility_result.loc[current_age + 1, :]
         )
+        # print(utility_result.loc[current_age, :])
+        # x = wealth_vector
+        # y = interpolated_utility_policy(wealth_vector)
+        # plt.plot(x, y, 'r')
+        # plt.show()
         for wealth in wealth_vector:
             fun = lambda x: -epstein_zin_utility(
                 x, wealth, current_age, interpolated_utility_policy
@@ -84,9 +90,21 @@ def optimize_lifecycle():
                 method="SLSQP",
                 bounds=[(0, wealth), (investor.MIN_EQUITY, 1)],
             )
-            consumption_policy.loc[current_age, wealth] = res.x[0]
+            consumption_policy.loc[current_age, wealth] = res.x[0] / wealth
             equity_policy.loc[current_age, wealth] = res.x[1]
             utility_result.loc[current_age, wealth] = np.abs(res.fun)
-
-    print("Training finished.")
+        # risky_ret, risky_prob = quantecon.quad.qnwnorm(
+        #    n=10,
+        #    mu=investor.RISK_ASSET_AVERAGE_RETURN,
+        #    sig2=investor.RISK_ASSET_VOLATILITY,
+        # )
+        # total_return = res.x[1] * risky_ret + (1 - res.x[1]) * investor.RISK_FREE_RETURN
+        # print("Return:", np.exp(total_return.mean()))
+        # new_wealth = investor.INCOME[current_age] + (wealth_vector.mean()
+        #    * consumption_policy.loc[current_age, :]).mean() * np.exp(total_return)
+        # print("Age:", current_age)
+        # print(np.dot(
+        #    risky_prob,
+        #    interpolated_utility_policy(new_wealth),
+        # ))
     return (consumption_policy, equity_policy, utility_result)
