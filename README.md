@@ -7,3 +7,5 @@ In the dynamic_programming folder I recreate and solve the problem using dynamic
 In the reinforcement folder I solve the problem training an agent.
 
 A few test* notebooks are used the explore.
+
+## Sections
