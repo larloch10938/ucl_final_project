@@ -1,5 +1,6 @@
 from lib_for_dqn import wrappers
 from lib_for_dqn import dqn_model
+from lib_for_dqn import lifecycle
 
 import argparse
 import time
@@ -13,10 +14,10 @@ import torch.optim as optim
 from tensorboardX import SummaryWriter
 
 
-DEFAULT_ENV_NAME = "PongNoFrameskip-v4"
+DEFAULT_ENV_NAME = "LifeCycle"
 MEAN_REWARD_BOUND = 19.5
 
-GAMMA = 0.99
+BELLMAN_LEARNING_RATE = 0.99
 BATCH_SIZE = 32
 REPLAY_SIZE = 10000
 LEARNING_RATE = 1e-4
@@ -101,7 +102,7 @@ def calc_loss(batch, net, tgt_net, device="cpu"):
     next_state_values[done_mask] = 0.0
     next_state_values = next_state_values.detach()
 
-    expected_state_action_values = next_state_values * GAMMA + rewards_v
+    expected_state_action_values = next_state_values * BELLMAN_LEARNING_RATE + rewards_v
     return nn.MSELoss()(state_action_values, expected_state_action_values)
 
 
@@ -115,10 +116,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
 
-    env = wrappers.make_env(args.env)
+    # Here I load a custom env
+    env = lifecycle.LifecycleEnv()
 
-    net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
-    tgt_net = dqn_model.DQN(env.observation_space.shape, env.action_space.n).to(device)
+    net = dqn_model.DQN(env.observation_space.shape, env.action_space["equity_allocation"].n, env.action_space["consumption"].n).to(device)
+    tgt_net = dqn_model.DQN(env.observation_space.shape, env.action_space["equity_allocation"].n, env.action_space["consumption"].n).to(device)
     writer = SummaryWriter(comment="-" + args.env)
     print(net)
 
