@@ -1,9 +1,15 @@
 {
     "cSpell.words": [
         "darkorange",
+        "dtype",
+        "figsize",
         "linspace",
+        "matplotlib",
         "newaxis",
+        "nrows",
         "scipy",
+        "tensorboard",
+        "timesteps",
         "vtplus",
         "yellowgreen"
     ]
