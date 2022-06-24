@@ -39,7 +39,6 @@ class LifecycleEnv(gym.Env):
                                                 action_consumption) + self.income
         if self.wealth < 0:
             self.wealth = 0
-            reward += -1000
             done = True
         reward += action_consumption
         # Complete step if agent is older than terminal age
