@@ -127,5 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Custom
 runs/*
 reinforcement/runs/*
+*.zip
+*.npz
