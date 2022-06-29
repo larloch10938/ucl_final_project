@@ -12,7 +12,7 @@ class LifecycleEnv(gym.Env):
         self.starting_age = 20
         self.age = self.starting_age
         self.retirement_age = 65
-        self.terminal_age = 100
+        self.terminal_age = 115
         self.last_consumption = 0
         self.const_consumption_level = const_consumption_level
         self.minimum_consumption = 0.1
@@ -46,8 +46,10 @@ class LifecycleEnv(gym.Env):
         #    reward += -100
         if action_consumption < (self.starting_income * 0.1):
             reward += -10
-        if action_consumption > (self.starting_income * 0.9):
-            reward += -10
+            done = True
+        #if action_consumption > (self.starting_income * 0.9):
+        #    reward += -10
+        #    done = True
         # terminal conditions: check if agent is broke or dead
         if self.wealth < 0:
             self.wealth = 0
