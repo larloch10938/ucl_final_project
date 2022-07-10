@@ -1,21 +1,22 @@
 import gym
 from gym.spaces import Discrete, Dict, Box
 import numpy as np
+import random
 
 
 class LifecycleEnv(gym.Env):
-    def __init__(self, const_consumption_level=0.8):
+    def __init__(self, consumption_shock=1):
         # Set starting variables
-        self.wealth = 1
+        self.wealth = 0.1
         self.starting_income = 1
         self.income = self.starting_income
-        self.starting_age = 20
+        self.starting_age = 60
         self.age = self.starting_age
         self.retirement_age = 65
-        self.terminal_age = 115
-        self.last_consumption = 0
-        self.const_consumption_level = const_consumption_level
-        self.minimum_consumption = 0.1
+        self.terminal_age = 70
+        self.last_consumption = self.starting_income
+        self.consumption_shock = consumption_shock
+        self.minimum_consumption = 0.2
         # define market returns
         self.risk_return = 0.05
         self.risk_free_return = 0.01
@@ -33,7 +34,7 @@ class LifecycleEnv(gym.Env):
             self.income = 0
         # transformation
         action_equity_allocation = (action[0] + 1) / 2
-        action_consumption = ((action[1] + 1) / 2) * self.wealth
+        action_consumption = ((action[1] + 1) / 2) * 10
         # Apply action
         portfolio_return = ((self.risk_return * action_equity_allocation) +
                             (self.risk_free_return * (1 - action_equity_allocation)))
@@ -42,25 +43,24 @@ class LifecycleEnv(gym.Env):
             (self.wealth - action_consumption) + self.income
         reward = action_consumption
         # penalize reward if consumption falls over a certain threshold
-        #if action_consumption < (self.last_consumption * self.const_consumption_level):
-        #    reward += -100
-        if action_consumption < (self.starting_income * 0.1):
-            reward += -10
+        if abs(action_consumption - self.last_consumption) > (self.last_consumption * self.consumption_shock):
             done = True
-        #if action_consumption > (self.starting_income * 0.9):
-        #    reward += -10
-        #    done = True
+        if action_consumption < self.minimum_consumption:
+            done = True
         # terminal conditions: check if agent is broke or dead
         if self.wealth < 0:
             self.wealth = 0
-            reward += -10
+            reward = 0
             done = True
+        #if random.random() > (0.99 ** np.max(self.age - 85, 0)):
+        #    done = True
         if self.age == self.terminal_age:
             done = True
-            reward = 0
+            #reward = 0
         self.last_consumption = action_consumption
         info = {"age": self.age,
                 "wealth": self.wealth,
+                "percent_consumption": (action_consumption / self.wealth),
                 "consumption": action_consumption,
                 "equity_allocation": action_equity_allocation,
                 "port_return": portfolio_return,
@@ -76,9 +76,9 @@ class LifecycleEnv(gym.Env):
 
     def reset(self):
         # Resetting age and wealth
-        self.wealth = 1
+        self.wealth = 0.1
         self.age = self.starting_age
         self.income = self.starting_income
-        self.last_consumption = 0
+        self.last_consumption = self.starting_income
         state = np.array([self.age, self.wealth], dtype=np.float32)
         return state
