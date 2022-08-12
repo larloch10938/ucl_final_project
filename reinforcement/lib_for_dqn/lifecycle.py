@@ -10,7 +10,7 @@ class LifecycleEnv(gym.Env):
                  mortality_profile,
                  consumption_shock=0.5,
                  minimum_consumption=0.1,
-                 risk_premium=0.05):
+                 risk_premium=0.045):
         # Set starting variables
         self.starting_wealth = 1
         self.wealth = self.starting_wealth
@@ -26,8 +26,8 @@ class LifecycleEnv(gym.Env):
         # define market returns
         self.risk_free_return = 0.01
         self.equity_return = risk_premium + self.risk_free_return
-        self.equity_volatility = 0.20
-        self.long_term_consumption_premium = 0.012
+        self.equity_volatility = 0.25
+        self.long_term_consumption_premium = 0.01
         # Observation space: age, from starting age to terminal age and wealth, from 0 to infinite wealth
         self.observation_space = Box(np.array([self.starting_age, 0]),
                                      np.array([self.terminal_age, np.inf]),
@@ -39,7 +39,7 @@ class LifecycleEnv(gym.Env):
         done = False
         # Calculate consumption and wealth
         action_equity_allocation = (action[0] + 1) / 2
-        action_consumption = ((action[1] + 1) / 2) * 1.5
+        action_consumption = ((action[1] + 1) / 2)
         # Apply action
         self.risk_return = np.random.normal(
             self.equity_return, self.equity_volatility, 1)[0]
