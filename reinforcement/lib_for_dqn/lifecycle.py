@@ -10,7 +10,7 @@ class LifecycleEnv(gym.Env):
                  mortality_profile,
                  consumption_shock=0.5,
                  minimum_consumption=0.1,
-                 risk_premium=0.045):
+                 risk_premium=0.05):
         # Set starting variables
         self.starting_wealth = 1
         self.wealth = self.starting_wealth
@@ -24,7 +24,7 @@ class LifecycleEnv(gym.Env):
         self.minimum_consumption = minimum_consumption
         self.last_consumption = self.minimum_consumption
         # define market returns
-        self.risk_free_return = 0.01
+        self.risk_free_return = 0.02
         self.equity_return = risk_premium + self.risk_free_return
         self.equity_volatility = 0.25
         self.long_term_consumption_premium = 0.01
